@@ -9,6 +9,7 @@ if [ -x "$(command -v lsb_release)" ]; then
             UBUNTU_VERSION=$(lsb_release -c -s)
             mkdir -p /tmp/kasm-cache
             cd /tmp/kasm-cache
+            sudo apt install -y wget
             wget https://github.com/kasmtech/KasmVNC/releases/download/v${KASM_VERSION}/kasmvncserver_${UBUNTU_VERSION}_${KASM_VERSION}_amd64.deb
             sudo apt-get install ./kasmvncserver_*.deb
             sudo apt install -y ubuntu-mate-desktop
@@ -17,6 +18,7 @@ if [ -x "$(command -v lsb_release)" ]; then
         CentOS)
             mkdir -p /tmp/kasm-cache
             cd /tmp/kasm-cache
+            sudo yum install -y perl-DateTime perl-DateTime-TimeZone wget
             wget https://github.com/kasmtech/KasmVNC/releases/download/v${KASM_VERSION}/kasmvncserver_centos_core_${KASM_VERSION}_x86_64.rpm
             sudo yum localinstall -y kasmvncserver_centos_core_${KASM_VERSION}_x86_64.rpm
             sudo yum groupinstall -y "MATE Desktop"
