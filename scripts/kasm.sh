@@ -10,16 +10,12 @@ if [ -x "$(command -v lsb_release)" ]; then
             UBUNTU_VERSION=$(lsb_release -c -s)
             mkdir -p /tmp/kasm-cache
             cd /tmp/kasm-cache
-            sudo apt install -y wget
+            sudo apt install -y wget expect
             wget https://github.com/kasmtech/KasmVNC/releases/download/v${KASM_VERSION}/kasmvncserver_${UBUNTU_VERSION}_${KASM_VERSION}_amd64.deb
             sudo apt-get install ./kasmvncserver_*.deb
             sudo apt install -y ubuntu-mate-desktop
             sudo addgroup $USER ssl-cert
-            echo -e "$KASM_VNC_PASSWD\n$KASM_VNC_PASSWD\n" | vncpasswd -u $USER -w -r
-            echo -e "$KASM_VNC_PASSWD\n$KASM_VNC_PASSWD\n" | kasmvncpasswd -u $USER -w "/home/$USER/.kasmpasswd"
-            sudo chown -R 1000:0 "/home/$USER/.kasmpasswd"
-            sudo addgroup $USER ssl-cert
-            sudo -u $USER vncserver -select-de mate
+
 
             ;;
         CentOS)
@@ -37,23 +33,13 @@ if [ -x "$(command -v lsb_release)" ]; then
             libXfixes.so.3 libXfont2.so.2 libXrandr.so.2 libXtst.so.6 libpixman-1.so.0 \
             perl-Data-Dumper perl-Hash-Merge-Simple perl-Switch perl-YAML-Tiny \
             xkeyboard-config xorg-x11-server-utils xorg-x11-xauth xorg-x11-xkb-utils \
-            perl-DateTime perl-DateTime-TimeZone wget
+            perl-DateTime perl-DateTime-TimeZone wget expect
             
             wget https://github.com/kasmtech/KasmVNC/releases/download/v${KASM_VERSION}/kasmvncserver_centos_core_${KASM_VERSION}_x86_64.rpm
             
             sudo rpm -ivh kasmvncserver_centos_core_${KASM_VERSION}_x86_64.rpm
-
-            echo "======== Create kasm user using vncpasswd ==========="
-            echo -e "$KASM_VNC_PASSWD\n$KASM_VNC_PASSWD\n" | vncpasswd -u $USER -w -r
-
             sudo usermod -aG kasmvnc-cert $USER || true
-            newgrp kasmvnc-cert || true
-            echo "======== Create kasm user using kasmvncpasswd ==========="
-            echo -e "$KASM_VNC_PASSWD\n$KASM_VNC_PASSWD\n" | kasmvncpasswd -u $USER -w "/home/$USER/.kasmpasswd"
-            sudo chown -R 1000:0 "/home/$USER/.kasmpasswd"
-            echo "======== Select mate ==========="
-            sudo -u $USER vncserver -select-de mate
-            echo "======== Done ==========="
+   
 
             ;;
         *)
@@ -66,6 +52,9 @@ else
     exit 1
 fi
 
+echo "========== Create user with read and write permisison =================="
+echo -e "$KASM_VNC_PASSWD\n$KASM_VNC_PASSWD\n" | vncpasswd -u $USER -w -r
+echo "========== User created =================="
 # Configuring VNC server
 vncserver -kill :1 || true  # Kill any existing VNC server on display :1 (if exists)
 
@@ -90,7 +79,7 @@ After=syslog.target network.target
 [Service]
 Type=forking
 User=administrator
-ExecStartPre=/bin/sh -c '/usr/bin/vncserver -kill %i > /dev/null 2>&1 || :'
+ExecStartPre=/bin/sh -c '/usr/bin/vncserver -kill %i -select-de mate > /dev/null 2>&1 || :'
 ExecStart=/usr/bin/vncserver -disableBasicAuth %i
 ExecStop=/usr/bin/vncserver -kill %i
 
