@@ -64,8 +64,8 @@ fi
 vncserver -kill :1 || true  # Kill any existing VNC server on display :1 (if exists)
 
 # Writing VNC server configuration to file
-mkdir -p ~/.vnc
-cat > ~/.vnc/kasmvnc.yaml << EOL
+mkdir -p /home/$USER/.vnc
+cat > /home/$USER/.vnc/kasmvnc.yaml << EOL
 network:
   protocol: http
   ssl:
@@ -93,8 +93,8 @@ WantedBy=default.target
 EOL
 sudo mv vncserver@:1.service /etc/systemd/system/vncserver@:1.service
 sudo systemctl daemon-reload
-sudo systemctl restart vncserver@:1.service
+
 sudo systemctl  enable vncserver@:1.service
-sudo systemctl status vncserver@:1.service
+sudo chown -R $USER:$USER /home/$USER/.vnc
 
 sudo rm -rf /tmp/kasm-cache
