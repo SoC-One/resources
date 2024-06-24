@@ -15,7 +15,7 @@ if [ -x "$(command -v lsb_release)" ]; then
             sudo apt-get install ./kasmvncserver_*.deb
             sudo apt install -y ubuntu-mate-desktop
             sudo addgroup $USER ssl-cert
-
+            echo -e "$KASM_VNC_PASSWD\n$KASM_VNC_PASSWD\n" | vncpasswd -u $USER -w -r
             echo -e "$KASM_VNC_PASSWD\n$KASM_VNC_PASSWD\n" | kasmvncpasswd -u $USER -w "/home/$USER/.kasmpasswd"
             sudo chown -R 1000:0 "/home/$USER/.kasmpasswd"
             sudo addgroup $USER ssl-cert
@@ -40,7 +40,7 @@ if [ -x "$(command -v lsb_release)" ]; then
             
             sudo rpm -ivh kasmvncserver_centos_core_${KASM_VERSION}_x86_64.rpm
             sudo yum groupinstall -y "MATE Desktop"
-            vncpasswd -u $USER -w -r
+            echo -e "$KASM_VNC_PASSWD\n$KASM_VNC_PASSWD\n" | vncpasswd -u $USER -w -r
 
             sudo usermod -aG kasmvnc-cert $USER || true
             newgrp kasmvnc-cert || true
