@@ -55,8 +55,6 @@ fi
 echo "========== Create user with read and write permisison =================="
 echo -e "$KASM_VNC_PASSWD\n$KASM_VNC_PASSWD\n" | vncpasswd -u $USER -w -r
 echo "========== User created =================="
-# Configuring VNC server
-vncserver -kill :1 || true  # Kill any existing VNC server on display :1 (if exists)
 
 # Writing VNC server configuration to file
 mkdir -p /home/$USER/.vnc
@@ -88,8 +86,10 @@ WantedBy=default.target
 EOL
 sudo mv vncserver@:1.service /etc/systemd/system/vncserver@:1.service
 sudo systemctl daemon-reload
+echo "========== Enable VNC service =================="
 
-sudo systemctl  enable vncserver@:1.service
+sudo systemctl enable vncserver@:1.service
 sudo chown -R $USER:$USER /home/$USER/.vnc
 
 sudo rm -rf /tmp/kasm-cache
+echo "========== Completed =================="
