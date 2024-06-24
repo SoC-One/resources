@@ -40,7 +40,11 @@ if [ -x "$(command -v lsb_release)" ]; then
             sudo rpm -ivh kasmvncserver_centos_core_${KASM_VERSION}_x86_64.rpm
             sudo usermod -aG kasmvnc-cert $USER || true
    
-
+            sudo yum install -y firewalld
+            sudo systemctl enable firewalld
+            # Allow vnc
+            sudo firewall-cmd --add-port=8444/tcp
+            sudo firewall-cmd --add-port=8444/tcp --permanent
             ;;
         *)
             echo "Unsupported distribution: $DISTRO"
@@ -68,6 +72,16 @@ network:
 EOL
 
 
+
+PASSWD_PATH="/home/$USER/.kasmpasswd"
+if [[ -f $PASSWD_PATH ]]; then
+    echo -e "\n---------  purging existing VNC password settings  ---------"
+    rm -f $PASSWD_PATH
+fi
+
+echo -e "${KASM_VNC_PASSWD}\n${KASM_VNC_PASSWD}\n" | kasmvncpasswd -u $USER -wo
+chmod 600 $PASSWD_PATH
+
 # Setting up systemd service for VNC server
 cat > vncserver@:1.service << EOL
 [Unit]
@@ -77,7 +91,7 @@ After=syslog.target network.target
 [Service]
 Type=forking
 User=administrator
-ExecStartPre=/bin/sh -c '/usr/bin/vncserver -kill %i -select-de mate > /dev/null 2>&1 || :'
+ExecStartPre=/bin/sh -c '/usr/bin/vncserver -kill %i  > /dev/null 2>&1 || :'
 ExecStart=/usr/bin/vncserver -disableBasicAuth %i
 ExecStop=/usr/bin/vncserver -kill %i
 
@@ -92,4 +106,6 @@ sudo systemctl enable vncserver@:1.service
 sudo chown -R $USER:$USER /home/$USER/.vnc
 
 sudo rm -rf /tmp/kasm-cache
+
 echo "========== Completed =================="
+exit
